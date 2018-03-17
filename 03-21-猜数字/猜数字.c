@@ -17,9 +17,15 @@ int main(){
 
 int know(int rNum){
 	int a;
-	int i=0;
+	int i=0,len=0;
 	while(1){
-		scanf("%d",&a);
+		while(1){
+			len = scanf("%d",&a);
+            if(len!=0){
+            	break;
+            }
+            getchar();
+		}
 		if(a<rNum){
 			printf("Ð¡ÁË£¡\n");
 			i++;
