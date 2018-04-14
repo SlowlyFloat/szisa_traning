@@ -4,8 +4,10 @@
 #include<stdlib.h>
 #include<windows.h>
 #include<string.h>
+#include<direct.h>
 
-int know(int op, char *name,int level);
+
+int know(int op, char *name, int level);
 int getdate(int j);
 int record(int st[6], int et[6], int a, int i, int addtime);
 void welcome();
@@ -15,6 +17,9 @@ int user(int op);
 void setlevel();
 
 int main(){
+	int data;
+	data = 0;
+	data = mkdir("data");
 	while (1){
 		printf("-------------------------\n");
 		printf("|\t猜数字游戏\t|\n");
@@ -33,11 +38,11 @@ void welcome(){
 	char choice;
 	int level;
 	FILE*file;
-	if ((file = fopen("username.txt", "r")) == NULL){
-		file = fopen("username.txt", "w");
+	if ((file = fopen("data//username.ini", "r")) == NULL){
+		file = fopen("data//username.ini", "w");
 		fclose(file);
 	}
-	file = fopen("username.txt", "r");
+	file = fopen("data//username.ini", "r");
 	ch = fgetc(file);
 	if (ch == EOF){//判断文件是否为空，空即为没有创建昵称  
 		op = 0;
@@ -47,38 +52,38 @@ void welcome(){
 	}
 	fclose(file);
 	if (op == 1){
-		file = fopen("username.txt", "r");
+		file = fopen("data//username.ini", "r");
 		fgets(name, 19, file);
 		printf("%s,你好,欢迎回来！\n\n", name);
 		fclose(file);
 	}
-	if ((file = fopen("level.txt", "r")) == NULL){
-		file = fopen("level.txt", "w");
+	if ((file = fopen("data//level.ini", "r")) == NULL){
+		file = fopen("data//level.ini", "w");
 		fclose(file);
 	}
-	file = fopen("level.txt", "r");
+	file = fopen("data//level.ini", "r");
 	ch = fgetc(file);
 	if (ch == EOF){//判断文件是否为空，空即为没有创建昵称  
-		level = 100;
+		level = 1000;
 	}
 	else{
-		file = fopen("level.txt", "r");
-		level=getw(file);
+		file = fopen("data//level.ini", "r");
+		level = getw(file);
 		fclose(file);
 	}
-	printf("当前游戏难度:%d\n\n",level);
+	printf("当前游戏难度:%d\n\n", level);
 	printf("1.玩猜数字\n2.查看历史成绩\n3.更改设置昵称\n4.更改游戏难度\n5.清理屏幕\n6.退出程序\n\n");
 	choice = getch();
 	switch (choice){
 	case '1':
 		fflush(stdin);
 		printf("\n>>>>>>>猜数字<<<<<<<\n\n");
-		know(op, name,level);
+		know(op, name, level);
 		break;
 	case '2':
 		printf("\n>>>>>>历史记录<<<<<<");
-		if ((file = fopen("record.txt", "r")) == NULL){
-			file = fopen("record.txt", "w");
+		if ((file = fopen("data//record.ini", "r")) == NULL){
+			file = fopen("data//record.ini", "w");
 			fclose(file);
 		}
 		viewhistory();
@@ -103,20 +108,20 @@ void welcome(){
 }
 
 /*猜数组主过程*/
-int know(int op, char *name,int level){
-	int a;
-	int i = 0, len = 0, rNum, j;
+int know(int op, char *name, int level){
+	int i = 0, len = 0, rNum, j, a, dp = 0, k = 0;
 	int Stime[6];
-	int k = 0;
 	int guess[1000] = { 0 };
 	int Etime[6];
 	char* username;
+	char ch;
 	float addtime;
 	FILE*file;
+	FILE*fp;
 	for (j = 0; j<6; j++){
 		Stime[j] = getdate(j);
 	}
-	printf("请输入一个1-%d以内的数值！\n",level);
+	printf("请输入一个1-%d以内的数值！\n", level);
 	srand((unsigned)time(NULL));
 	rNum = rand() % level;
 	while (1){
@@ -160,11 +165,25 @@ int know(int op, char *name,int level){
 	printf("猜测次数:%d次\n\n\n", i);
 	if (op == 0){
 		user(op);
-		file = fopen("username.txt", "r");
-		fgets(name, 19, file);
+		file = fopen("data//username.ini", "r");
+		ch = fgetc(file);
+		if (ch != EOF){
+			dp = 1;
+		}
+		else{
+			dp = 0;
+		}
 		fclose(file);
+		if (dp == 1){
+			file = fopen("data//username.ini", "r");
+			fgets(name, 19, file);
+			fclose(file);
+		}
+		if (dp == 0){
+			name = "NULL";
+		}
 	}
-	file = fopen("record.txt", "a+");
+	file = fopen("data//record.ini", "a+");
 	fprintf(file, "%s", "用户昵称：");
 	fprintf(file, "%s\n", *(&name));//向record文件写入玩家昵称
 	fprintf(file, "%s", "游戏难度：");
@@ -194,8 +213,8 @@ int getdate(int j){
 /*设置游戏昵称*/
 int user(int op){
 	FILE*fp;
-	char filename[20] = "username.txt";
-	char username[20];
+	char filename[20] = "data//username.ini";
+	char username[20]="NULL";
 	fflush(stdin);
 	if (op == 0){
 		printf("请设置你的游戏昵称：\n");
@@ -214,7 +233,7 @@ int user(int op){
 /*更改游戏难度*/
 void setlevel(){
 	FILE*file;
-	long level,len;
+	long level, len;
 	while (1){
 		len = scanf("%d", &level);
 		if (len != 0){
@@ -222,7 +241,7 @@ void setlevel(){
 		}
 		getchar();
 	}
-	file = fopen("level.txt","w");
+	file = fopen("data//level.ini", "w");
 	putw(level, file);
 	fclose(file);
 	printf("\n\n");
@@ -231,7 +250,7 @@ void setlevel(){
 /*写入记录*/
 int record(int st[6], int et[6], int a, int i, int addtime){
 	FILE*fp;
-	char filename[20] = "record.txt";
+	char filename[20] = "data//record.ini";
 	fp = fopen(filename, "a+");
 	fprintf(fp, "%s", "游戏开始时间：");
 	fprintf(fp, "%d/%d/%d  %d:%d:%d\n", st[0], st[1], st[2], st[3], st[4], st[5]);
@@ -251,22 +270,22 @@ void viewhistory(){
 	char historydate[1000];
 	int dp;
 	char ch;
-	file = fopen("record.txt", "r");
+	file = fopen("data//record.ini", "r");
 	ch = fgetc(file);
-	if (ch == EOF){//判断文件是否为空，空即为没有创建昵称  
+	if (ch == EOF){
 		dp = 0;
 	}
 	else{
 		dp = 1;
 	}
 	if (dp == 1){
-		file = fopen("record.txt", "r");
+		file = fopen("data//record.ini", "r");
 		while (fgets(historydate, 1000, file)){
 			j++;
 		}
 		printf("\n\n数据记录行数：%d\n\n", j);
 		fclose(file);
-		file = fopen("record.txt", "r");
+		file = fopen("data//record.ini", "r");
 		for (k = 0; k<j; k++){
 			fgets(historydate, 500, file);
 			printf("%s", historydate);
@@ -282,7 +301,7 @@ void viewhistory(){
 void viewguess(int guess[1000], int times){
 	int i;
 	FILE*fp;
-	fp = fopen("record.txt", "a+");
+	fp = fopen("data//record.ini", "a+");
 	fprintf(fp, "%s", "猜测记录：");
 	for (i = 0; i<times; i++){
 		fprintf(fp, "%5d", guess[i]);
